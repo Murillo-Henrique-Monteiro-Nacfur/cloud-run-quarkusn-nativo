@@ -1,30 +1,13 @@
 steps:
-  # 1. Executa o build do Maven para criar o Uber-JAR
-  - name: 'maven:3.9.6-eclipse-temurin-21'
-    entrypoint: 'mvn'
-    args: ['package', '-DskipTests']
-
-  # 2. Constrói a imagem do Docker
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/serveless-test-pubsub', '.']
-
-  # 3. Envia a imagem construída para o Google Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/serveless-test-pubsub']
-
-  # 4. Faz o deploy da Cloud Function usando a imagem recém-criada
-  - name: 'gcr.io/cloud-builders/gcloud' # Nome da imagem CORRIGIDO
-    entrypoint: 'gcloud'
-    args:
-      - 'functions'
-      - 'deploy'
-      - 'serveless-test-pubsub'
-      - '--gen2'
-      - '--region=southamerica-east1'
-      - '--trigger-http'
-      - '--allow-unauthenticated'
-      - '--image=gcr.io/$PROJECT_ID/serveless-test-pubsub'
-
-# Define a imagem final que será usada pela Cloud Function
-images:
-  - 'gcr.io/$PROJECT_ID/serveless-test-pubsub'
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'functions'
+  - 'deploy'
+  - 'serveless-test-pubsub'
+  - '--gen2'
+  - '--runtime=java21'
+  - '--region=europe-west1' # Região do seu gatilho original
+  - '--source=.'
+  - '--entry-point=io.quarkus.gcp.functions.QuarkusHttpFunction'
+  - '--trigger-http'
+  - '--allow-unauthenticated'

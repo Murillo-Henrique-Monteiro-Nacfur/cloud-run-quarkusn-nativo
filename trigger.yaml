@@ -1,0 +1,27 @@
+# Este é o seu novo trigger.yaml corrigido
+# Ele aponta para o cloudbuild.yaml e resolve o problema de logging
+
+# Nome do arquivo de build que o gatilho vai usar
+filename: cloudbuild.yaml
+
+# Configurações do repositório GitHub (mantidas do seu original)
+github:
+  name: serveless-test-pubsub
+  owner: Murillo-Henrique-Monteiro-Nacfur
+  push:
+    branch: ^master$
+
+# Configurações de logging para resolver o erro de permissão
+logging: CLOUD_LOGGING_ONLY
+
+# O resto das informações do seu gatilho original
+name: rmgpgab-serveless-test-pubsub-europe-west1-Murillo-Henrique-zeo
+description: "Deploy da Cloud Function serveless-test-pubsub on push to ^master$"
+id: 76a1ead3-6d8b-4d37-b63f-982c8c04dccb
+resourceName: projects/neon-trilogy-479114-v8/locations/global/triggers/76a1ead3-6d8b-4d37-b63f-982c8c04dccb
+serviceAccount: projects/neon-trilogy-479114-v8/serviceAccounts/neon-trilogy-479114-v8@appspot.gserviceaccount.com
+substitutions:
+  _TRIGGER_ID: 76a1ead3-6d8b-4d37-b63f-982c8c04dccb
+tags:
+- gcp-cloud-build-deploy-cloud-function # Tag corrigida
+- serveless-test-pubsub
