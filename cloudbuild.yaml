@@ -1,0 +1,21 @@
+steps:
+  # 1. Executa o build do Maven para criar o Uber-JAR
+  - name: 'maven:3.8-openjdk-21' # Imagem com Maven e Java 21
+    entrypoint: 'mvn'
+    args: ['package', '-DskipTests'] # Roda "mvn package" e pula os testes
+
+  # 2. Constrói a imagem do Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/serveless-test-pubsub' # Substitua pelo nome da sua imagem
+      - '.'
+
+  # 3. Envia a imagem construída para o Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/serveless-test-pubsub']
+
+# Define a imagem final que será usada pela Cloud Function
+images:
+  - 'gcr.io/$PROJECT_ID/serveless-test-pubsub'
