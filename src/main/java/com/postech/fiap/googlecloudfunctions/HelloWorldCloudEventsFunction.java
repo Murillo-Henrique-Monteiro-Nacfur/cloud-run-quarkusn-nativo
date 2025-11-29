@@ -5,7 +5,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 import com.google.cloud.functions.CloudEventsFunction;
 
 import io.cloudevents.CloudEvent;
+import jakarta.inject.Named;
 
+@Named("HelloWorldCloudEventsFunction")
 @ApplicationScoped
 public class HelloWorldCloudEventsFunction implements CloudEventsFunction {
 

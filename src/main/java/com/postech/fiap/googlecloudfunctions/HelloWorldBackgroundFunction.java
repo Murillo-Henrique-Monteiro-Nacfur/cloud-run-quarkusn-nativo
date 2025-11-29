@@ -4,7 +4,9 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 import com.google.cloud.functions.BackgroundFunction;
 import com.google.cloud.functions.Context;
+import jakarta.inject.Named;
 
+@Named("HelloWorldBackgroundFunction")
 @ApplicationScoped
 public class HelloWorldBackgroundFunction implements BackgroundFunction<HelloWorldBackgroundFunction.StorageEvent> {
 
