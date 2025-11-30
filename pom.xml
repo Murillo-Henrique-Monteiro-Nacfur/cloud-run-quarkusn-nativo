@@ -111,6 +111,18 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+            <!-- [START cloudrun_pubsub_jib] -->
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <to>
+                        <image>${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/pubsub</image>
+                    </to>
+                </configuration>
+            </plugin>
+            <!-- [END cloudrun_pubsub_jib] -->
         </plugins>
     </build>
 

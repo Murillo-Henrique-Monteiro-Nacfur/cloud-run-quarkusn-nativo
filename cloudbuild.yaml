@@ -1,33 +1,32 @@
-logging: CLOUD_LOGGING_ONLY
-
 steps:
-  # 1. Executa o build do Maven para criar o Uber-JAR
-  - name: 'maven:3.9.6-eclipse-temurin-21'
-    entrypoint: 'mvn'
-    args: ['package', '-DskipTests']
-
-  # 2. Constrói a imagem do Docker
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/serveless-test-pubsub', '.']
-
-  # 3. Envia a imagem construída para o Google Container Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/serveless-test-pubsub']
-
-  # 4. Faz o deploy da Cloud Function usando a imagem recém-criada
-  - name: 'gcr.io/cloud-builders/gcloud' # Nome da imagem CORRIGIDO
-    entrypoint: 'gcloud'
+  # Etapa 1: Build com Maven e Jib
+  # O Jib criará a imagem do contêiner e a enviará para o Artifact Registry.
+  # As variáveis como ${_PROJECT_ID} são fornecidas pelo gatilho do Cloud Build.
+  - name: 'gcr.io/cloud-builders/mvn'
     args:
-      - 'functions'
+      - compile
+      - jib:build
+      - -Dimage=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub
+
+  # Etapa 2: Deploy no Cloud Run
+  # Esta etapa usa a imagem enviada na etapa anterior para implantar o serviço.
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
       - 'deploy'
-      - 'serveless-test-pubsub'
-      - '--gen2'
-      - '--region=southamerica-east1'
-      - '--trigger-http'
-      - '--allow-unauthenticated'
-      - '--image=gcr.io/$PROJECT_ID/serveless-test-pubsub'
+      - 'serveless-test-pubsub-tutorial' # Nome do seu serviço no Cloud Run
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
+      - '--region'
+      - '${_REGION}'
+      - '--no-allow-unauthenticated'
+      - '--project'
+      - '${_PROJECT_ID}'
 
-# Define a imagem final que será usada pela Cloud Function
+# Define a imagem que será o resultado final deste build.
 images:
-  - 'gcr.io/$PROJECT_ID/serveless-test-pubsub'
+  - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
 
+# Aponta para o bucket do Cloud Storage onde os logs de build serão armazenados.
+logsBucket: 'gs://default-postech-fiap-build-logs'
