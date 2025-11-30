@@ -123,6 +123,9 @@
                     <to>
                         <image>${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/pubsub</image>
                     </to>
+                    <container>
+                        <mainClass>io.quarkus.runner.GeneratedMain</mainClass>
+                    </container>
                 </configuration>
             </plugin>
             <!-- [END cloudrun_pubsub_jib] -->
