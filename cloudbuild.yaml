@@ -1,43 +1,22 @@
+# ARQUIVO DE DIAGNÓSTICO TEMPORÁRIO
+# O objetivo deste build é apenas listar o conteúdo do diretório 'target'
+# para entendermos o que o Maven está gerando.
+
 steps:
-  # Etapa 1: Build da aplicação com Maven, garantindo um ambiente limpo.
-  # Isso gera o arquivo JAR executável em target/
+  # Etapa 1: Build da aplicação com Maven
   - name: 'maven:3.9.6-eclipse-temurin-21'
+    id: 'Build'
     entrypoint: 'mvn'
     args:
       - 'clean'
       - 'package'
       - '-DskipTests'
 
-  # Etapa 2: Build da imagem do contêiner com Docker
-  # Isso usa o Dockerfile na raiz do projeto para construir a imagem
-  # e a envia para o Artifact Registry.
-  - name: 'gcr.io/cloud-builders/docker'
+  # Etapa 2: Listar o conteúdo do diretório 'target'
+  # Isso nos mostrará exatamente quais arquivos e JARs foram criados.
+  - name: 'ubuntu'
+    id: 'Diagnose'
+    entrypoint: 'ls'
     args:
-      - 'build'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
-      - '.'
-
-  # Etapa 3: Deploy no Cloud Run
-  # Esta etapa usa a imagem enviada na etapa anterior para implantar o serviço.
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'deploy'
-      - 'serveless-test-pubsub-tutorial' # Nome do seu serviço no Cloud Run
-      - '--image'
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
-      - '--region'
-      - '${_REGION}'
-      - '--allow-unauthenticated'
-      - '--project'
-      - '${_PROJECT_ID}'
-
-# Define a imagem que será o resultado final deste build.
-# O Cloud Build precisa saber qual imagem enviar para o Artifact Registry.
-images:
-  - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
-
-# Aponta para o bucket do Cloud Storage onde os logs de build serão armazenados.
-logsBucket: 'gs://default-postech-fiap-build-logs'
+      - '-lR'
+      - 'target'
