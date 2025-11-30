@@ -2,7 +2,8 @@ steps:
   # Etapa 1: Build com Maven e Jib
   # O Jib criará a imagem do contêiner e a enviará para o Artifact Registry.
   # As variáveis como ${_PROJECT_ID} são fornecidas pelo gatilho do Cloud Build.
-  - name: 'gcr.io/cloud-builders/mvn'
+  - name: 'maven:3.9.6-eclipse-temurin-21'
+    entrypoint: 'mvn'
     args:
       - compile
       - jib:build
