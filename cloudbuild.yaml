@@ -1,9 +1,10 @@
 steps:
-  # Etapa 1: Build da aplicação com Maven
+  # Etapa 1: Build da aplicação com Maven, garantindo um ambiente limpo.
   # Isso gera o arquivo JAR executável em target/
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
+      - 'clean'
       - 'package'
       - '-DskipTests'
 
