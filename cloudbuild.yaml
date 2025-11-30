@@ -1,13 +1,13 @@
 steps:
-  # Etapa 1: Build com Maven e Jib
-  # O Jib criará a imagem do contêiner e a enviará para o Artifact Registry.
+  # Etapa 1: Build com Maven e a extensão Jib do Quarkus
+  # A extensão criará a imagem do contêiner e a enviará para o Artifact Registry.
   # As variáveis como ${_PROJECT_ID} são fornecidas pelo gatilho do Cloud Build.
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
-      - compile
-      - jib:build
-      - -Dimage=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub
+      - 'clean'
+      - 'package'
+      - '-Dquarkus.container-image.build=true'
 
   # Etapa 2: Deploy no Cloud Run
   # Esta etapa usa a imagem enviada na etapa anterior para implantar o serviço.
