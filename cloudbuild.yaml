@@ -21,9 +21,11 @@ steps:
       - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
       - '--region'
       - '${_REGION}'
-      - '--no-allow-unauthenticated'
+      - '--allow-unauthenticated'
       - '--project'
       - '${_PROJECT_ID}'
+      - '--no-cpu-boost'
+      - '--startup-cpu-boost'
 
 # Define a imagem que será o resultado final deste build.
 images:
