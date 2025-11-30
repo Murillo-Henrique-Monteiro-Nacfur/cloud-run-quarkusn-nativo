@@ -1,15 +1,23 @@
 steps:
-  # Etapa 1: Build com Maven e Jib, pulando os testes.
-  # O Jib criará a imagem do contêiner e a enviará para o Artifact Registry.
+  # Etapa 1: Build da aplicação com Maven
+  # Isso gera o arquivo JAR executável em target/
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'package'
-      - 'jib:build'
       - '-DskipTests'
-      - '-Dimage=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
 
-  # Etapa 2: Deploy no Cloud Run
+  # Etapa 2: Build da imagem do contêiner com Docker
+  # Isso usa o Dockerfile na raiz do projeto para construir a imagem
+  # e a envia para o Artifact Registry.
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
+      - '.'
+
+  # Etapa 3: Deploy no Cloud Run
   # Esta etapa usa a imagem enviada na etapa anterior para implantar o serviço.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
@@ -24,9 +32,9 @@ steps:
       - '--allow-unauthenticated'
       - '--project'
       - '${_PROJECT_ID}'
-      - '--no-cpu-boost'
 
 # Define a imagem que será o resultado final deste build.
+# O Cloud Build precisa saber qual imagem enviar para o Artifact Registry.
 images:
   - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
 

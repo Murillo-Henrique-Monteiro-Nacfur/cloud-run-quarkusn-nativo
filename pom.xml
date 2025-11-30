@@ -115,22 +115,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>com.google.cloud.tools</groupId>
-                <artifactId>jib-maven-plugin</artifactId>
-                <version>3.5.1</version>
-                <configuration>
-                    <from>
-                        <image>eclipse-temurin:21-jre</image>
-                    </from>
-                    <to>
-                        <image>${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub</image>
-                    </to>
-                    <container>
-                        <mainClass>io.quarkus.bootstrap.runner.QuarkusEntryPoint</mainClass>
-                    </container>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
