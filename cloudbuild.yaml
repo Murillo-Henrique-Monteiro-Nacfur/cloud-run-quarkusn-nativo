@@ -1,43 +1,41 @@
+# cloudbuild.yaml otimizado para build nativo do Quarkus
+
 steps:
-  # Etapa 1: Build da aplicação com Maven, garantindo um ambiente limpo.
-  # Isso gera o arquivo JAR executável em target/
+  # Etapa 1: Construir a imagem nativa do Quarkus e enviá-la para o Artifact Registry.
+  # Este comando único utiliza a integração do Quarkus para construir e enviar a imagem,
+  # sem a necessidade de um Dockerfile. A tag da imagem usa o hash do commit ($SHORT_SHA)
+  # para garantir rastreabilidade e deploys consistentes.
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'clean'
       - 'package'
       - '-DskipTests'
+      - '-Dquarkus.container-image.build=true'
+      - '-Dquarkus.container-image.push=true'
+      - '-Dquarkus.container-image.image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub:$SHORT_SHA'
 
-  # Etapa 2: Build da imagem do contêiner com Docker
-  # Isso usa o Dockerfile na raiz do projeto para construir a imagem
-  # e a envia para o Artifact Registry.
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
-      - '.'
-
-  # Etapa 3: Deploy no Cloud Run
-  # Esta etapa usa a imagem enviada na etapa anterior para implantar o serviço.
+  # Etapa 2: Implantar a imagem recém-construída no Cloud Run.
+  # Esta etapa pega a imagem com a tag de commit específica e a implanta,
+  # garantindo que a versão exata do código seja executada.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: 'gcloud'
     args:
       - 'run'
       - 'deploy'
       - 'serveless-test-pubsub-tutorial' # Nome do seu serviço no Cloud Run
       - '--image'
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub:$SHORT_SHA'
       - '--region'
       - '${_REGION}'
       - '--allow-unauthenticated'
       - '--project'
-      - '${_PROJECT_ID}'
+      - '${PROJECT_ID}'
 
-# Define a imagem que será o resultado final deste build.
-# O Cloud Build precisa saber qual imagem enviar para o Artifact Registry.
+# A seção 'images' informa ao Cloud Build qual artefato final foi produzido.
 images:
-  - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/serveless-test-pubsub:$SHORT_SHA'
 
 # Aponta para o bucket do Cloud Storage onde os logs de build serão armazenados.
+# Certifique-se de que este bucket existe no seu projeto.
 logsBucket: 'gs://default-postech-fiap-build-logs'
