@@ -8,8 +8,13 @@ steps:
       - 'clean'
       - 'package'
       - '-DskipTests'
-      - '-Dquarkus.package.jar.type=uber-jar'
-      - '-Dquarkus.package.jar.enabled=true'
+
+  # Etapa 1.5: Renomear JAR para o formato esperado pelo Cloud Functions
+  - name: 'ubuntu'
+    args:
+      - 'mv'
+      - 'target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar.original'
+      - 'target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar'
 
   # Etapa 2: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
