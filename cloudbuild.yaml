@@ -25,6 +25,7 @@ steps:
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
+      - '--no-gen2'
 
   # Etapa 3: Criar tópico do Pub/Sub para Background Function (se não existir)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -50,6 +51,7 @@ steps:
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
+      - '--no-gen2'
 
   # Etapa 5: Deploy da função Cloud Events
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -65,6 +67,7 @@ steps:
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
+      - '--no-gen2'
 
 # Configuração de logging para o build
 logsBucket: 'gs://default-postech-fiap-build-logs'
