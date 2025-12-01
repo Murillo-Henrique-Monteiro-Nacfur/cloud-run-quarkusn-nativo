@@ -1,7 +1,7 @@
 # cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen)
 
 steps:
-  # Etapa 1: Fazer build do projeto Quarkus
+  # Etapa 1: Fazer build completo do projeto
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
@@ -9,12 +9,17 @@ steps:
       - 'package'
       - '-DskipTests'
 
-  # Etapa 1.5: Renomear JAR para o formato esperado pelo Cloud Functions
+  # Etapa 1.5: Preparar JAR para Cloud Functions (copiar .original para nome esperado)
   - name: 'ubuntu'
-    args:
-      - 'mv'
-      - 'target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar.original'
-      - 'target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar'
+    script: |
+      #!/bin/bash
+      set -e
+      echo "Verificando arquivos JAR gerados..."
+      ls -la target/*.jar
+      echo "Copiando JAR para formato esperado pelo Cloud Functions..."
+      cp target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar.original target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar
+      echo "JAR preparado com sucesso!"
+      ls -la target/serveless-test-pubsub-1.0.0-SNAPSHOT.jar
 
   # Etapa 2: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

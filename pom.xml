@@ -135,5 +135,12 @@
                 <quarkus.native.enabled>true</quarkus.native.enabled>
             </properties>
         </profile>
+        <profile>
+            <id>cloud-functions</id>
+            <properties>
+                <!-- Garante que apenas o JAR padrão do Maven seja gerado -->
+                <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
+            </properties>
+        </profile>
     </profiles>
 </project>
