@@ -22,6 +22,7 @@ resourceName: projects/neon-trilogy-479114-v8/locations/global/triggers/76a1ead3
 serviceAccount: projects/neon-trilogy-479114-v8/serviceAccounts/neon-trilogy-479114-v8@appspot.gserviceaccount.com
 substitutions:
   _TRIGGER_ID: 76a1ead3-6d8b-4d37-b63f-982c8c04dccb
+  _REGION: us-central1
 tags:
 - gcp-cloud-build-deploy-cloud-function # Tag corrigida
 - serveless-test-pubsub

@@ -1,17 +1,70 @@
 # cloudbuild.yaml para deploy de Google Cloud Functions
 
 steps:
-  # Etapa 1: Fazer build e deploy direto das funções para Google Cloud Functions
-  # O Quarkus gera automaticamente os arquivos necessários para o deploy
+  # Etapa 1: Fazer build do projeto Quarkus
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'clean'
       - 'package'
       - '-DskipTests'
-      - '-Dquarkus.google-cloud-functions.deploy=true'
-      - '-Dquarkus.google-cloud-functions.project-id=${PROJECT_ID}'
-      - '-Dquarkus.google-cloud-functions.region=${_REGION}'
+      - '-Dquarkus.package.jar.type=uber-jar'
+      - '-Dquarkus.package.jar.enabled=true'
+
+  # Etapa 2: Deploy da função HTTP
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'HelloWorldHttpFunction'
+      - '--source=.'
+      - '--runtime=java21'
+      - '--trigger-http'
+      - '--allow-unauthenticated'
+      - '--region=${_REGION}'
+      - '--project=${PROJECT_ID}'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
+
+  # Etapa 3: Criar tópico do Pub/Sub para Background Function (se não existir)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'pubsub'
+      - 'topics'
+      - 'create'
+      - 'hello-world-topic'
+      - '--project=${PROJECT_ID}'
+    allow_failure: true  # Permite falha se o tópico já existir
+
+  # Etapa 4: Deploy da função Background
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'HelloWorldBackgroundFunction'
+      - '--source=.'
+      - '--runtime=java21'
+      - '--trigger-topic=hello-world-topic'
+      - '--region=${_REGION}'
+      - '--project=${PROJECT_ID}'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
+
+  # Etapa 5: Deploy da função Cloud Events
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'functions'
+      - 'deploy'
+      - 'HelloWorldCloudEventsFunction'
+      - '--source=.'
+      - '--runtime=java21'
+      - '--trigger-event=google.storage.object.finalize'
+      - '--trigger-resource=hello-world-bucket'
+      - '--region=${_REGION}'
+      - '--project=${PROJECT_ID}'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
 # Configuração de logging para o build
 logsBucket: 'gs://default-postech-fiap-build-logs'
