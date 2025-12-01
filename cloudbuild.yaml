@@ -9,7 +9,7 @@ steps:
       - 'package'
       - '-DskipTests'
       - '-Dquarkus.package.jar.type=uber-jar'
-      - '-Dquarkus.package.jar.enabled=true'
+      - '-Dquarkus.package.jar.enabled=false'
 
   # Etapa 2: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'

@@ -1,15 +1,11 @@
-# Use a imagem base do Java 21
-FROM eclipse-temurin:21-jre
-
-# Defina o diretório de trabalho dentro do contêiner
+FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
 WORKDIR /work/
+RUN chown 1001 /work \
+    && chmod "g+rwX" /work \
+    && chown 1001:root /work
+COPY --chown=1001:root --chmod=0755 target/*-runner /work/application
 
-# Copie o JAR executável do Quarkus (o "runner" JAR) para dentro do contêiner
-# O * é usado para corresponder a qualquer nome de versão
-COPY target/*-runner.jar app.jar
-
-# Defina a porta em que a aplicação irá rodar
 EXPOSE 8080
+USER 1001
 
-# O comando para iniciar a aplicação quando o contêiner for executado
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
