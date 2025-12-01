@@ -1,14 +1,15 @@
-# cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen)
+# cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen) - Build Nativo
 
 steps:
-  # Etapa 1: Fazer build do projeto Quarkus (JAR padrão para Cloud Functions)
+  # Etapa 1: Fazer build nativo do projeto Quarkus (executável nativo para Cloud Functions)
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'clean'
       - 'package'
       - '-DskipTests'
-      - '-Dquarkus.package.jar.type=uber-jar'
+      - '-Pnative'
+      - '-Dquarkus.native.enabled=true'
       - '-Dquarkus.package.jar.enabled=false'
 
   # Etapa 2: Deploy da função HTTP

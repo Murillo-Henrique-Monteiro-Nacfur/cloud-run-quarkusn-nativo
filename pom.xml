@@ -60,6 +60,7 @@
     </dependencies>
 
     <build>
+        <finalName>serveless-test-pubsub-1.0.0-SNAPSHOT</finalName>
         <plugins>
             <plugin>
                 <groupId>${quarkus.platform.group-id}</groupId>
@@ -133,13 +134,6 @@
                 <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
                 <skipITs>false</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
-            </properties>
-        </profile>
-        <profile>
-            <id>cloud-functions</id>
-            <properties>
-                <!-- Garante que apenas o JAR padrão do Maven seja gerado -->
-                <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
             </properties>
         </profile>
     </profiles>
