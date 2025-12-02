@@ -48,7 +48,7 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '--docker-registry=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
