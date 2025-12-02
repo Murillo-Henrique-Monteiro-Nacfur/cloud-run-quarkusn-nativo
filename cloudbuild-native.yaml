@@ -66,7 +66,7 @@ steps:
       - '--trigger-http'
       - '--allow-unauthenticated'
       - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REPOSITORY}/${_SERVICE_NAME}'
+      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
@@ -82,7 +82,7 @@ steps:
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
       - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REPOSITORY}/${_SERVICE_NAME}'
+      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
   # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
@@ -97,7 +97,7 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
       - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REPOSITORY}/${_SERVICE_NAME}'
+      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
 # O Cloud Build fará o push automático desta imagem para o Artifact Registry no final.
