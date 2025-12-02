@@ -1,41 +1,25 @@
-# cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen) - Build Nativo
+# cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen)
 
 steps:
-  # Etapa 1: Fazer build nativo do projeto Quarkus usando Maven com Java 21
+  # Etapa 1: Fazer build completo do projeto
   - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'clean'
       - 'package'
       - '-DskipTests'
-      - '-Pnative'
+      - '-Dquarkus.package.jar.type=uber-jar'
+      - '-Dquarkus.package.jar.enabled=false'
 
-  # Etapa 2: Build da imagem Docker nativa
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '-f'
-      - 'Dockerfile'
-      - '-t'
-      - 'gcr.io/${PROJECT_ID}/serveless-test-pubsub-native:${COMMIT_SHA}'
-      - '.'
-
-  # Etapa 3: Push da imagem para GCR
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - 'gcr.io/${PROJECT_ID}/serveless-test-pubsub-native:${COMMIT_SHA}'
-
-  # Etapa 4: Deploy da função HTTP usando container nativo
+  # Etapa 2: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldHttpFunction'
-      - '--docker-registry=gcr.io'
-      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
-      - '--docker-tag=${COMMIT_SHA}'
+      - '--source=.'
+      - '--runtime=java21'
       - '--trigger-http'
       - '--allow-unauthenticated'
       - '--region=${_REGION}'
@@ -43,7 +27,7 @@ steps:
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
       - '--gen2'
 
-  # Etapa 5: Criar tópico do Pub/Sub para Background Function (se não existir)
+  # Etapa 3: Criar tópico do Pub/Sub para Background Function (se não existir)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -54,32 +38,30 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o tópico já existir
 
-  # Etapa 6: Deploy da função Background usando container nativo
+  # Etapa 4: Deploy da função Background
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldBackgroundFunction'
-      - '--docker-registry=gcr.io'
-      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
-      - '--docker-tag=${COMMIT_SHA}'
+      - '--source=.'
+      - '--runtime=java21'
       - '--trigger-topic=hello-world-topic'
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
       - '--gen2'
 
-  # Etapa 7: Deploy da função Cloud Events usando container nativo
+  # Etapa 5: Deploy da função Cloud Events
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldCloudEventsFunction'
-      - '--docker-registry=gcr.io'
-      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
-      - '--docker-tag=${COMMIT_SHA}'
+      - '--source=.'
+      - '--runtime=java21'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
       - '--region=${_REGION}'
