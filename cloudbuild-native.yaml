@@ -1,15 +1,30 @@
 # cloudbuild-native.yaml: Build nativo e deploy no Cloud Functions (Gen 2) via Docker
 
 steps:
-  # 1. Compila o executável nativo. Este passo é demorado.
-  - name: 'quay.io/quarkus/ubi-quarkus-native-image:23.0-java21'
-    id: 'Build Native Executable'
-    entrypoint: 'mvn'
-    args: ['package', '-Pnative', '-DskipTests']
-
-  # 2. Constrói a imagem Docker. O push será feito no final pelo Cloud Build.
+  # 1. Compila o executável nativo.
+  # Esta etapa usa o builder do Docker para executar o Maven em um contêiner,
+  # compartilhando o socket do Docker do host. Isso é necessário para a compilação nativa do Quarkus.
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build Docker Image'
+    id: 'Build Native Executable'
+    entrypoint: 'docker'
+    args:
+      - 'run'
+      - '--rm'
+      - '-v'
+      - '/var/run/docker.sock:/var/run/docker.sock' # Compartilha o socket do Docker
+      - '-v'
+      - './:/workspace' # Mapeia o código-fonte
+      - '-w'
+      - '/workspace'
+      - 'maven:3.9.6-eclipse-temurin-21' # Imagem que contém o Maven
+      - 'mvn' # Comando a ser executado
+      - 'package'
+      - '-Pnative'
+      - '-DskipTests'
+
+  # 2. Constrói a imagem Docker final com o executável nativo já pronto.
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'Build Final Docker Image'
     args:
       - 'build'
       - '-t'
