@@ -2,7 +2,6 @@
 
 steps:
   # 1. Compila o executável nativo.
-  # Adicionado argumento para resolver o erro de inicialização do Netty no GraalVM.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Native Executable'
     entrypoint: 'docker'
@@ -22,7 +21,6 @@ steps:
       - 'package'
       - '-Pnative'
       - '-DskipTests'
-      - '-Dquarkus.native.additional-build-args=--initialize-at-build-time=io.netty.buffer.PooledByteBufAllocator'
 
   # 2. Constrói a imagem Docker final com o executável nativo já pronto.
   - name: 'gcr.io/cloud-builders/docker'
