@@ -8,10 +8,17 @@ steps:
       - 'clean'
       - 'package'
       - '-DskipTests'
-      - '-Dquarkus.package.jar.type=uber-jar'
-      - '-Dquarkus.package.jar.enabled=false'
+      - '-Dquarkus.package.type=uber-jar' # Garante que o uber-jar seja criado
+      - '-Dquarkus.package.jar.enabled=true'
 
-  # Etapa 2: Deploy da função HTTP
+  # Etapa 2: Listar conteúdo do diretório 'target' para depuração
+  - name: 'ubuntu'
+    entrypoint: 'ls'
+    args:
+      - '-R'
+      - 'target'
+
+  # Etapa 3: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -27,7 +34,7 @@ steps:
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
       - '--gen2'
 
-  # Etapa 3: Criar tópico do Pub/Sub para Background Function (se não existir)
+  # Etapa 4: Criar tópico do Pub/Sub (se não existir)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -38,7 +45,7 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o tópico já existir
 
-  # Etapa 4: Deploy da função Background
+  # Etapa 5: Deploy da função Background (agora com o gatilho correto de Storage)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -47,13 +54,14 @@ steps:
       - 'HelloWorldBackgroundFunction'
       - '--source=.'
       - '--runtime=java21'
-      - '--trigger-topic=hello-world-topic'
+      - '--trigger-event=google.storage.object.finalize'
+      - '--trigger-resource=hello-world-bucket' # Adicionado recurso do trigger
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
       - '--gen2'
 
-  # Etapa 5: Deploy da função Cloud Events
+  # Etapa 6: Deploy da função Cloud Events (agora com o gatilho correto de Pub/Sub)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -62,8 +70,7 @@ steps:
       - 'HelloWorldCloudEventsFunction'
       - '--source=.'
       - '--runtime=java21'
-      - '--trigger-event=google.storage.object.finalize'
-      - '--trigger-resource=hello-world-bucket'
+      - '--trigger-topic=hello-world-topic' # Trocado para o gatilho de tópico
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
