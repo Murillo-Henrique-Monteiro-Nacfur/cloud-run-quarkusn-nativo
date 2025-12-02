@@ -2,6 +2,7 @@
 
 steps:
   # 1. Compila o executável nativo.
+  # Esta etapa fornece ao contêiner do Maven acesso ao daemon e ao cliente Docker do host.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Native Executable'
     entrypoint: 'docker'
@@ -9,7 +10,9 @@ steps:
       - 'run'
       - '--rm'
       - '-v'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/run/docker.sock:/var/run/docker.sock' # Compartilha o socket do Docker (o daemon)
+      - '-v'
+      - '/usr/bin/docker:/usr/bin/docker'           # Compartilha o binário do Docker (o cliente)
       - '-v'
       - '/workspace:/workspace'
       - '-w'
@@ -20,7 +23,7 @@ steps:
       - '-Pnative'
       - '-DskipTests'
 
-  # 2. Constrói a imagem Docker final.
+  # 2. Constrói a imagem Docker final com o executável nativo já pronto.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Final Docker Image'
     args:
