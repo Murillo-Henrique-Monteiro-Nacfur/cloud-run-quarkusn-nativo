@@ -2,7 +2,7 @@
 
 steps:
   # Etapa 1: Fazer build nativo do projeto Quarkus (executável nativo para Cloud Functions)
-  - name: 'maven:3.9.6-eclipse-temurin-21'
+  - name: 'gcr.io/cloud-builders/mvn'
     entrypoint: 'mvn'
     args:
       - 'clean'
@@ -12,7 +12,11 @@ steps:
       - '-Dquarkus.native.enabled=true'
       - '-Dquarkus.package.jar.enabled=false'
       - '-Dquarkus.native.container-build=true'
+      - '-Dquarkus.native.container-runtime=docker'
       - '-Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21'
+    volumes:
+      - name: 'docker'
+        path: '/var/run/docker.sock'
 
   # Etapa 2: Build da imagem Docker nativa
   - name: 'gcr.io/cloud-builders/docker'
