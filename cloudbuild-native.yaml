@@ -2,8 +2,6 @@
 
 steps:
   # 1. Compila o executável nativo.
-  # Esta etapa usa o builder do Docker para executar o Maven em um contêiner,
-  # compartilhando o socket do Docker do host. Isso é necessário para a compilação nativa do Quarkus.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Native Executable'
     entrypoint: 'docker'
@@ -11,18 +9,18 @@ steps:
       - 'run'
       - '--rm'
       - '-v'
-      - '/var/run/docker.sock:/var/run/docker.sock' # Compartilha o socket do Docker
+      - '/var/run/docker.sock:/var/run/docker.sock'
       - '-v'
-      - './:/workspace' # Mapeia o código-fonte
+      - '/workspace:/workspace'
       - '-w'
       - '/workspace'
-      - 'maven:3.9.6-eclipse-temurin-21' # Imagem que contém o Maven
-      - 'mvn' # Comando a ser executado
+      - 'maven:3.9.6-eclipse-temurin-21'
+      - 'mvn'
       - 'package'
       - '-Pnative'
       - '-DskipTests'
 
-  # 2. Constrói a imagem Docker final com o executável nativo já pronto.
+  # 2. Constrói a imagem Docker final.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Final Docker Image'
     args:
