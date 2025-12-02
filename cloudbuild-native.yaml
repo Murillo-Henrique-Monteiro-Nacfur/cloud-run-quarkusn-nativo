@@ -7,17 +7,14 @@ steps:
     entrypoint: 'mvn'
     args: ['package', '-Pnative', '-DskipTests']
 
-  # 2. Constrói a imagem Docker e a envia para o Artifact Registry.
-  # O campo 'images' cuida do push automático após o build.
+  # 2. Constrói a imagem Docker. O push será feito no final pelo Cloud Build.
   - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build and Push Docker Image'
+    id: 'Build Docker Image'
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
       - '.'
-    images:
-      - '${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
 
   # 3. Implanta a HelloWorldHttpFunction a partir da imagem Docker.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -31,8 +28,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- USA A IMAGEM
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction' # <-- DIZ QUAL CLASSE USAR
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -46,8 +43,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- USA A MESMA IMAGEM
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction' # <-- DIZ QUAL CLASSE USAR
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
   # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -60,14 +57,12 @@ steps:
       - '--gen2'
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- USA A MESMA IMAGEM
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction' # <-- DIZ QUAL CLASSE USAR
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
-# Variáveis de substituição que serão usadas no pipeline
-substitutions:
-  _SERVICE_NAME: 'serveless-test-pubsub'
-  _AR_REPO: 'my-apps' # O nome do repositório que você criou no Passo 1
-  _REGION: 'southamerica-east1'
+# O Cloud Build fará o push automático desta imagem para o Artifact Registry no final.
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
 
 # Aumenta o timeout padrão, pois a compilação nativa pode demorar
 timeout: '1800s' # 30 minutos
