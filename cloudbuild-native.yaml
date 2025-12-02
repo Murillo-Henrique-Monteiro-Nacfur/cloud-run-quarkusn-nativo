@@ -28,18 +28,6 @@ steps:
       - '-DskipTests'
       - '-Dquarkus.netty.native-image-compute-allocator-config=true'
 
-  # 1.5. Criar tópico do Pub/Sub para CloudEvents Function (se não existir)
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    id: 'Create PubSub Topic'
-    entrypoint: 'gcloud'
-    args:
-      - 'pubsub'
-      - 'topics'
-      - 'create'
-      - 'hello-world-topic'
-      - '--project=${PROJECT_ID}'
-    allow_failure: true  # Permite falha se o tópico já existir
-
   # 2. Constrói a imagem Docker final usando BuildKit.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Final Docker Image'
@@ -63,8 +51,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--image'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '--docker-registry=artifact-registry'
+      - '--docker-repository=${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
@@ -79,8 +67,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
-      - '--image'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+      - '--docker-registry=artifact-registry'
+      - '--docker-repository=${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
   # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
@@ -94,8 +82,8 @@ steps:
       - '--gen2'
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
-      - '--image' # <-- FLAG SEPARADA
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- VALOR SEPARADO
+      - '--docker-registry=artifact-registry'
+      - '--docker-repository=${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
 # O Cloud Build fará o push automático desta imagem para o Artifact Registry no final.
