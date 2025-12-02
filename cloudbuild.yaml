@@ -1,22 +1,17 @@
 # cloudbuild.yaml para deploy de Google Cloud Functions (2nd Gen) - Build Nativo
 
 steps:
-  # Etapa 1: Fazer build nativo do projeto Quarkus (executável nativo para Cloud Functions)
-  - name: 'gcr.io/cloud-builders/mvn'
-    entrypoint: 'mvn'
+  # Etapa 1: Fazer build nativo do projeto Quarkus usando container com Mandrel
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
     args:
-      - 'clean'
-      - 'package'
-      - '-DskipTests'
-      - '-Pnative'
-      - '-Dquarkus.native.enabled=true'
-      - '-Dquarkus.package.jar.enabled=false'
-      - '-Dquarkus.native.container-build=true'
-      - '-Dquarkus.native.container-runtime=docker'
-      - '-Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21'
-    volumes:
-      - name: 'docker'
-        path: '/var/run/docker.sock'
+      - '-c'
+      - |
+        docker run --rm -v $(pwd):/workspace -w /workspace \
+        quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 \
+        mvn clean package -DskipTests -Pnative \
+        -Dquarkus.native.enabled=true \
+        -Dquarkus.package.jar.enabled=false
 
   # Etapa 2: Build da imagem Docker nativa
   - name: 'gcr.io/cloud-builders/docker'
