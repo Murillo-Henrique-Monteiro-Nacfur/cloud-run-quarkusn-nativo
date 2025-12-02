@@ -1,5 +1,10 @@
 # cloudbuild-native.yaml: Build nativo e deploy no Cloud Functions (Gen 2) via Docker
 
+# Substituições necessárias (defina na execução do build)
+# _REGION=us-central1
+# _REPOSITORY=cloud-run-source-deploy
+# _SERVICE_NAME=serveless-test-pubsub-native
+
 steps:
   # 1. Compila o executável nativo.
   - name: 'gcr.io/cloud-builders/docker'
@@ -22,6 +27,18 @@ steps:
       - '-Pnative'
       - '-DskipTests'
       - '-Dquarkus.netty.native-image-compute-allocator-config=true'
+
+  # 1.5. Criar tópico do Pub/Sub para CloudEvents Function (se não existir)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'Create PubSub Topic'
+    entrypoint: 'gcloud'
+    args:
+      - 'pubsub'
+      - 'topics'
+      - 'create'
+      - 'hello-world-topic'
+      - '--project=${PROJECT_ID}'
+    allow_failure: true  # Permite falha se o tópico já existir
 
   # 2. Constrói a imagem Docker final usando BuildKit.
   - name: 'gcr.io/cloud-builders/docker'
@@ -46,8 +63,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--image' # <-- FLAG SEPARADA
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- VALOR SEPARADO
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
@@ -62,8 +79,8 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
-      - '--image' # <-- FLAG SEPARADA
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest' # <-- VALOR SEPARADO
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
   # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
