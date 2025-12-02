@@ -30,7 +30,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '.'
 
   # 3. Implanta a HelloWorldHttpFunction a partir da imagem Docker.
@@ -45,7 +45,7 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
   # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
@@ -60,7 +60,7 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
   # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
@@ -74,12 +74,12 @@ steps:
       - '--gen2'
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
-      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '--docker-image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
 # O Cloud Build fará o push automático desta imagem para o Artifact Registry no final.
 images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
 
 # Aumenta o timeout padrão, pois a compilação nativa pode demorar
 timeout: '1800s' # 30 minutos
