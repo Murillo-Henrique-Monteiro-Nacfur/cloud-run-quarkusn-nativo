@@ -12,15 +12,32 @@ steps:
       - '-Dquarkus.native.enabled=true'
       - '-Dquarkus.package.jar.enabled=false'
 
-  # Etapa 2: Deploy da função HTTP
+  # Etapa 2: Build da imagem Docker nativa
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'Dockerfile'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/serveless-test-pubsub-native:${COMMIT_SHA}'
+      - '.'
+
+  # Etapa 3: Push da imagem para GCR
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/${PROJECT_ID}/serveless-test-pubsub-native:${COMMIT_SHA}'
+
+  # Etapa 4: Deploy da função HTTP usando container nativo
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldHttpFunction'
-      - '--source=.'
-      - '--runtime=java21'
+      - '--docker-registry=gcr.io'
+      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
+      - '--docker-tag=${COMMIT_SHA}'
       - '--trigger-http'
       - '--allow-unauthenticated'
       - '--region=${_REGION}'
@@ -28,7 +45,7 @@ steps:
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
       - '--gen2'
 
-  # Etapa 3: Criar tópico do Pub/Sub para Background Function (se não existir)
+  # Etapa 5: Criar tópico do Pub/Sub para Background Function (se não existir)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -39,30 +56,32 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o tópico já existir
 
-  # Etapa 4: Deploy da função Background
+  # Etapa 6: Deploy da função Background usando container nativo
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldBackgroundFunction'
-      - '--source=.'
-      - '--runtime=java21'
+      - '--docker-registry=gcr.io'
+      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
+      - '--docker-tag=${COMMIT_SHA}'
       - '--trigger-topic=hello-world-topic'
       - '--region=${_REGION}'
       - '--project=${PROJECT_ID}'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
       - '--gen2'
 
-  # Etapa 5: Deploy da função Cloud Events
+  # Etapa 7: Deploy da função Cloud Events usando container nativo
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'functions'
       - 'deploy'
       - 'HelloWorldCloudEventsFunction'
-      - '--source=.'
-      - '--runtime=java21'
+      - '--docker-registry=gcr.io'
+      - '--docker-repository=${PROJECT_ID}/serveless-test-pubsub-native'
+      - '--docker-tag=${COMMIT_SHA}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
       - '--region=${_REGION}'
