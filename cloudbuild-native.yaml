@@ -53,7 +53,7 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o repositório já existir
 
-  # 3. Implanta a HelloWorldHttpFunction a partir da imagem Docker.
+  # 3. Implanta a HelloWorldHttpFunction usando source com Dockerfile.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy HTTP Function'
     entrypoint: 'gcloud'
@@ -65,11 +65,10 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-http'
       - '--allow-unauthenticated'
-      - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
+      - '--source=.'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
-  # 4. Implanta a HelloWorldBackgroundFunction a partir da mesma imagem Docker.
+  # 4. Implanta a HelloWorldBackgroundFunction usando source com Dockerfile.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy Background Function'
     entrypoint: 'gcloud'
@@ -81,11 +80,10 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
-      - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
+      - '--source=.'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
-  # 5. Implanta a HelloWorldCloudEventsFunction a partir da mesma imagem Docker.
+  # 5. Implanta a HelloWorldCloudEventsFunction usando source com Dockerfile.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy CloudEvents Function'
     entrypoint: 'gcloud'
@@ -96,13 +94,10 @@ steps:
       - '--gen2'
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
-      - '--docker-registry=artifact-registry'
-      - '--docker-repository=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}'
+      - '--source=.'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
-# O Cloud Build fará o push automático desta imagem para o Artifact Registry no final.
-images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
+# O Cloud Build fará o build e push automático da imagem quando usar --source com Dockerfile.
 
 # Aumenta o timeout padrão, pois a compilação nativa pode demorar
 timeout: '1800s' # 30 minutos
