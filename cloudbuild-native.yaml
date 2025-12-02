@@ -2,7 +2,7 @@
 
 steps:
   # 1. Compila o executável nativo. Este passo é demorado.
-  - name: 'maven:3.9.6-eclipse-temurin-21'
+  - name: 'quay.io/quarkus/ubi-quarkus-native-image:23.0-java21'
     id: 'Build Native Executable'
     entrypoint: 'mvn'
     args: ['package', '-Pnative', '-DskipTests']
