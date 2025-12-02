@@ -2,6 +2,7 @@
 
 steps:
   # 1. Compila o executável nativo.
+  # Adicionada propriedade específica do Quarkus para resolver conflitos da Netty.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Native Executable'
     entrypoint: 'docker'
@@ -21,6 +22,7 @@ steps:
       - 'package'
       - '-Pnative'
       - '-DskipTests'
+      - '-Dquarkus.netty.native-image-compute-allocator-config=true'
 
   # 2. Constrói a imagem Docker final com o executável nativo já pronto.
   - name: 'gcr.io/cloud-builders/docker'
