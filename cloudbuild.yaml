@@ -2,7 +2,7 @@
 
 steps:
   # Etapa 1: Fazer build nativo do projeto Quarkus (executável nativo para Cloud Functions)
-  - name: 'gcr.io/cloud-builders/mvn'
+  - name: 'maven:3.9.6-eclipse-temurin-21'
     entrypoint: 'mvn'
     args:
       - 'clean'
