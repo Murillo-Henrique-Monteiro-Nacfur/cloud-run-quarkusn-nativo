@@ -32,6 +32,9 @@ steps:
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
       - '.'
+    env:
+      - 'DOCKER_BUILDKIT=1'
+
 
   # 3. Implanta a HelloWorldHttpFunction a partir da imagem Docker.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
