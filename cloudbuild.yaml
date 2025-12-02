@@ -2,7 +2,7 @@
 
 steps:
   # Etapa 1: Fazer build nativo do projeto Quarkus (executável nativo para Cloud Functions)
-  - name: 'maven:3.9.6-eclipse-temurin-21'
+  - name: 'quay.io/quarkus/centos-quarkus-maven:21.3-java17'
     entrypoint: 'mvn'
     args:
       - 'clean'
@@ -11,8 +11,6 @@ steps:
       - '-Pnative'
       - '-Dquarkus.native.enabled=true'
       - '-Dquarkus.package.jar.enabled=false'
-      - '-Dquarkus.native.container-build=true'
-      - '-Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21'
 
   # Etapa 2: Deploy da função HTTP
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
