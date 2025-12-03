@@ -1,11 +1,11 @@
-# cloudbuild-native.yaml: Build nativo e deploy no Cloud Functions (Gen 2) via container customizado
+# cloudbuild-native.yaml: Build nativo e deploy no Cloud Run Functions (mais compatível com containers)
 
 # Substituições necessárias (defina na execução do build)
 # _REGION=southamerica-east1
 # _REPOSITORY=cloud-run-source-teste-pubsub
 # _SERVICE_NAME=serveless-test-pubsub
 
-# IMPORTANTE: Usa --runtime=container para forçar build do Dockerfile em vez de JAR
+# NOTA: Usando Cloud Run Functions em vez de Cloud Functions Gen 2 para melhor suporte a containers
 
 steps:
   # 1. Compila o executável nativo.
@@ -55,54 +55,49 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o repositório já existir
 
-  # 3. Implanta a HelloWorldHttpFunction usando container customizado.
+  # 3. Implanta a HelloWorldHttpFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy HTTP Function'
     entrypoint: 'gcloud'
     args:
-      - 'functions'
+      - 'run'
       - 'deploy'
-      - 'HelloWorldHttpFunction'
-      - '--gen2'
-      - '--region=${_REGION}'
-      - '--trigger-http'
-      - '--allow-unauthenticated'
+      - 'helloworld-http-function'
       - '--source=.'
-      - '--runtime=container'
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
+      - '--platform=managed'
+      - '--port=8080'
 
-  # 4. Implanta a HelloWorldBackgroundFunction usando container customizado.
+  # 4. Implanta a HelloWorldBackgroundFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy Background Function'
     entrypoint: 'gcloud'
     args:
-      - 'functions'
+      - 'run'
       - 'deploy'
-      - 'HelloWorldBackgroundFunction'
-      - '--gen2'
-      - '--region=${_REGION}'
-      - '--trigger-event=google.storage.object.finalize'
-      - '--trigger-resource=hello-world-bucket'
+      - 'helloworld-background-function'
       - '--source=.'
-      - '--runtime=container'
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
+      - '--platform=managed'
+      - '--port=8080'
 
-  # 5. Implanta a HelloWorldCloudEventsFunction usando container customizado.
+  # 5. Implanta a HelloWorldCloudEventsFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy CloudEvents Function'
     entrypoint: 'gcloud'
     args:
-      - 'functions'
+      - 'run'
       - 'deploy'
-      - 'HelloWorldCloudEventsFunction'
-      - '--gen2'
-      - '--region=${_REGION}'
-      - '--trigger-topic=hello-world-topic'
+      - 'helloworld-cloudevents-function'
       - '--source=.'
-      - '--runtime=container'
-      - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
+      - '--region=${_REGION}'
+      - '--allow-unauthenticated'
+      - '--platform=managed'
+      - '--port=8080'
 
-# O Cloud Build fará o build e push automático da imagem quando usar --source com Dockerfile.
+# O Cloud Build fará o build e deploy automático dos Cloud Run services quando usar --source com Dockerfile.
 
 # Aumenta o timeout padrão, pois a compilação nativa pode demorar
 timeout: '1800s' # 30 minutos
