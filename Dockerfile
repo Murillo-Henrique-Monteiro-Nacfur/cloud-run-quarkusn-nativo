@@ -1,11 +1,11 @@
-# Estágio 1: Build Nativo com a imagem builder recomendada pelo Quarkus
-FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 as build
+# Estágio 1: Build Nativo usando uma imagem que contém Maven e GraalVM
+FROM maven:3.9-sapmachine-21-graalvm as build
 
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Esta imagem de builder já contém o Maven.
+# O comando 'mvn' está disponível globalmente nesta imagem
 RUN mvn package -Pnative -DskipTests
 
 # Estágio 2: Imagem final, leve e otimizada
