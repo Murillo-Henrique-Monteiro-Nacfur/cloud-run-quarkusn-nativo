@@ -2,13 +2,17 @@
 # Esta imagem contém Maven, GraalVM e todas as libs nativas necessárias.
 FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 as build
 WORKDIR /app
+
+# Copia os arquivos do Maven Wrapper
+COPY mvnw .
+COPY .mvn ./.mvn
+
+# Copia o pom.xml e o código fonte
 COPY pom.xml .
 COPY src ./src
-# O diretório de usuário na imagem é /home/quarkus, então ajustamos o cache do Maven
-RUN mvn package -Pnative -DskipTests -Dmaven.repo.local=/app/.m2/repository
 
-# Comando de depuração para verificar o artefato gerado
-RUN ls -l /app/target
+# Executa o build usando o Maven Wrapper
+RUN ./mvnw package -Pnative -DskipTests
 
 # Estágio 2: Imagem final, leve e otimizada
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
