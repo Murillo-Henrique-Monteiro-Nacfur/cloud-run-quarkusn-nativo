@@ -1,5 +1,5 @@
 # Estágio 1: Build Nativo usando uma imagem que contém Maven e GraalVM
-FROM maven:3.9-sapmachine-21-graalvm as build
+FROM vegardit/graalvm-maven:latest-java21 as build
 
 WORKDIR /app
 COPY pom.xml .
