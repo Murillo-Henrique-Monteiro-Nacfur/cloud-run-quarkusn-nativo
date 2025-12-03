@@ -2,19 +2,16 @@ FROM maven:3.9.6-eclipse-temurin-21 as build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-RUN mvn package -Pnative -DskipTests
+RUN mvn package -DskipTests
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
+FROM eclipse-temurin:21-jre
 WORKDIR /work/
-RUN chown 1001 /work \
-    && chmod "g+rwX" /work \
-    && chown 1001:root /work
-COPY --from=build --chown=1001:root /app/target/*-runner.jar /work/application
-RUN chmod +x /work/application
+COPY --from=build /app/target/quarkus-app/lib/ /work/lib/
+COPY --from=build /app/target/quarkus-app/*.jar /work/
+COPY --from=build /app/target/quarkus-app/app/ /work/app/
+COPY --from=build /app/target/quarkus-app/quarkus/ /work/quarkus/
 
 EXPOSE 8080
-USER 1001
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 
-# Cloud Run passa PORT automaticamente, mas Quarkus native precisa de configuração
-# Usamos sh -c para expandir a variável $PORT
-ENTRYPOINT ["sh", "-c", "./application -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT"]
+ENTRYPOINT ["java", "-jar", "/work/quarkus-run.jar"]
