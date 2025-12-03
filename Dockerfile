@@ -3,6 +3,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn package -Pnative -DskipTests
+# Debug: Listar conteúdo do target para verificar se o arquivo foi gerado
+RUN ls -la /app/target/
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
 WORKDIR /work/
