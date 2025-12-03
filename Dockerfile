@@ -8,17 +8,16 @@ COPY src ./src
 # Executa a compilação nativa para gerar o executável *-runner
 RUN mvn package -Pnative -DskipTests
 
-# Estágio 2: Imagem final com Distroless - super leve e segura
-FROM gcr.io/distroless/base-debian12
+# Estágio 2: Imagem final com Distroless - com bibliotecas C comuns
+# Usamos a imagem 'cc' que inclui bibliotecas essenciais como a libz.so.1
+FROM gcr.io/distroless/cc-debian12
 
 WORKDIR /work/
 
 # Copia apenas o executável nativo do estágio de build.
-# As permissões de execução são preservadas.
 COPY --from=build /app/target/*-runner /work/application
 
 EXPOSE 8080
 
 # A imagem distroless já usa um usuário não-root.
-# O ENTRYPOINT aponta para o nosso executável.
 ENTRYPOINT ["/work/application"]
