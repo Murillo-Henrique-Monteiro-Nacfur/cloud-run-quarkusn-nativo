@@ -1,9 +1,11 @@
-# cloudbuild-native.yaml: Build nativo e deploy no Cloud Functions (Gen 2) via Docker
+# cloudbuild-native.yaml: Build nativo e deploy no Cloud Functions (Gen 2) via container customizado
 
 # Substituições necessárias (defina na execução do build)
-# _REGION=us-central1
-# _REPOSITORY=cloud-run-source-deploy
-# _SERVICE_NAME=serveless-test-pubsub-native
+# _REGION=southamerica-east1
+# _REPOSITORY=cloud-run-source-teste-pubsub
+# _SERVICE_NAME=serveless-test-pubsub
+
+# IMPORTANTE: Usa --runtime=container para forçar build do Dockerfile em vez de JAR
 
 steps:
   # 1. Compila o executável nativo.
@@ -53,7 +55,7 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o repositório já existir
 
-  # 3. Implanta a HelloWorldHttpFunction usando source com Dockerfile.
+  # 3. Implanta a HelloWorldHttpFunction usando container customizado.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy HTTP Function'
     entrypoint: 'gcloud'
@@ -66,9 +68,10 @@ steps:
       - '--trigger-http'
       - '--allow-unauthenticated'
       - '--source=.'
+      - '--runtime=container'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldHttpFunction'
 
-  # 4. Implanta a HelloWorldBackgroundFunction usando source com Dockerfile.
+  # 4. Implanta a HelloWorldBackgroundFunction usando container customizado.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy Background Function'
     entrypoint: 'gcloud'
@@ -81,9 +84,10 @@ steps:
       - '--trigger-event=google.storage.object.finalize'
       - '--trigger-resource=hello-world-bucket'
       - '--source=.'
+      - '--runtime=container'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldBackgroundFunction'
 
-  # 5. Implanta a HelloWorldCloudEventsFunction usando source com Dockerfile.
+  # 5. Implanta a HelloWorldCloudEventsFunction usando container customizado.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy CloudEvents Function'
     entrypoint: 'gcloud'
@@ -95,6 +99,7 @@ steps:
       - '--region=${_REGION}'
       - '--trigger-topic=hello-world-topic'
       - '--source=.'
+      - '--runtime=container'
       - '--entry-point=com.postech.fiap.googlecloudfunctions.HelloWorldCloudEventsFunction'
 
 # O Cloud Build fará o build e push automático da imagem quando usar --source com Dockerfile.
