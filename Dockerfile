@@ -1,23 +1,25 @@
-# Estágio 1: Build Nativo com a imagem vegardit, que inclui Maven e GraalVM
+# Estágio 1: Build Nativo (sem alterações, está funcionando)
 FROM vegardit/graalvm-maven:latest-java21 as build
 
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Executa a compilação nativa para gerar o executável *-runner
 RUN mvn package -Pnative -DskipTests
 
-# Estágio 2: Imagem final com Distroless - com bibliotecas C comuns
-# Usamos a imagem 'cc' que inclui bibliotecas essenciais como a libz.so.1
-FROM gcr.io/distroless/cc-debian12
+# Estágio 2: Imagem final com Debian Slim - leve e comprovadamente compatível
+# Usamos debian:12-slim porque provamos durante a depuração que ela contém todas as libs necessárias.
+FROM debian:12-slim
 
 WORKDIR /work/
 
-# Copia apenas o executável nativo do estágio de build.
+# Copia o executável do estágio de build
 COPY --from=build /app/target/*-runner /work/application
+
+# Garante que o executável tenha permissão de execução (boa prática)
+RUN chmod +x /work/application
 
 EXPOSE 8080
 
-# A imagem distroless já usa um usuário não-root.
+# Define o comando para iniciar a aplicação quando o contêiner rodar
 ENTRYPOINT ["/work/application"]
