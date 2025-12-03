@@ -1,22 +1,28 @@
 package com.postech.fiap.googlecloudfunctions;
 
-import io.quarkus.google.cloud.functions.test.FunctionType;
-import io.quarkus.google.cloud.functions.test.WithFunction;
 import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
-import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @QuarkusTest
-@WithFunction(FunctionType.BACKGROUND)
 class HelloWorldBackgroundFunctionTest {
+
+    @Inject
+    HelloWorldBackgroundFunction function; // Injeta a função diretamente
+
     @Test
-    void testAccept() {
-        given()
-                .body("{\"data\":{\"name\":\"hello.txt\"}}")
-                .when()
-                .post()
-                .then()
-                .statusCode(200);
+    void testOnStorageEvent() {
+        // 1. Prepara o evento de entrada
+        HelloWorldBackgroundFunction.StorageEvent event = new HelloWorldBackgroundFunction.StorageEvent();
+        event.name = "hello.txt";
+
+        // 2. Chama o método diretamente
+        // 3. Verifica se nenhuma exceção é lançada
+        assertDoesNotThrow(() -> function.onStorageEvent(event));
+
+        // Em um cenário real, você poderia usar Mockito para verificar
+        // se um serviço injetado na função foi chamado corretamente.
     }
 }

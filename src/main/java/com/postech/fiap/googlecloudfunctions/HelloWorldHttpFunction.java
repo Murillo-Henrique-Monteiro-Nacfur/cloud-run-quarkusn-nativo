@@ -1,21 +1,18 @@
 package com.postech.fiap.googlecloudfunctions;
 
-import java.io.Writer;
-
+import io.quarkus.funqy.Funq;
 import jakarta.enterprise.context.ApplicationScoped;
 
-import com.google.cloud.functions.HttpFunction;
-import com.google.cloud.functions.HttpRequest;
-import com.google.cloud.functions.HttpResponse;
-import jakarta.inject.Named;
-
-@Named("HelloWorldHttpFunction")
 @ApplicationScoped
-public class HelloWorldHttpFunction implements HttpFunction {
+public class HelloWorldHttpFunction {
 
-    @Override
-    public void service(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
-        Writer writer = httpResponse.getWriter();
-        writer.write("Hello World");
+    /**
+     * Com Funqy, uma função HTTP simples pode apenas retornar o corpo da resposta.
+     * O Funqy cuida da criação da resposta HTTP.
+     * O nome da função se torna o path do endpoint, ex: /helloWorldHttp
+     */
+    @Funq
+    public String helloWorldHttp() {
+        return "Hello World";
     }
 }
