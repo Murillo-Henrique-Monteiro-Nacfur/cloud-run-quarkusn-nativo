@@ -3,8 +3,6 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn package -Pnative -DskipTests
-# Debug: Listar conteúdo do target para verificar se o arquivo foi gerado
-RUN ls -la /app/target/
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
 WORKDIR /work/
@@ -17,5 +15,6 @@ RUN chmod +x /work/application
 EXPOSE 8080
 USER 1001
 
-# Cloud Run passa PORT automaticamente, Quarkus usa isso por padrão
-ENTRYPOINT ["./application"]
+# Cloud Run passa PORT automaticamente, mas Quarkus native precisa de configuração
+# Usamos sh -c para expandir a variável $PORT
+ENTRYPOINT ["sh", "-c", "./application -Dquarkus.http.host=0.0.0.0 -Dquarkus.http.port=$PORT"]
