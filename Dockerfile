@@ -4,6 +4,8 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 RUN mvn package -Pnative -DskipTests
+# Adicionando um comando para listar os arquivos e depurar o nome do artefato
+RUN ls -l /app/target
 
 # Use a mesma plataforma para a imagem final
 FROM --platform=linux/amd64 registry.access.redhat.com/ubi9/ubi-minimal:9.6
