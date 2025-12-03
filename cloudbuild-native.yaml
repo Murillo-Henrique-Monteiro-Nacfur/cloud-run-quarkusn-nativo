@@ -30,7 +30,7 @@ steps:
       - '-DskipTests'
       - '-Dquarkus.netty.native-image-compute-allocator-config=true'
 
-  # 2. Constrói a imagem Docker final usando BuildKit.
+  # 2. Constrói a imagem Docker final.
   - name: 'gcr.io/cloud-builders/docker'
     id: 'Build Final Docker Image'
     args:
