@@ -1,18 +1,12 @@
-# Estágio 1: Build Nativo com a imagem correta do Quarkus
-# Esta imagem contém Maven, GraalVM e todas as libs nativas necessárias.
+# Estágio 1: Build Nativo com a imagem builder recomendada pelo Quarkus
 FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 as build
+
 WORKDIR /app
-
-# Copia os arquivos do Maven Wrapper
-COPY mvnw .
-COPY .mvn ./.mvn
-
-# Copia o pom.xml e o código fonte
 COPY pom.xml .
 COPY src ./src
 
-# Executa o build usando o Maven Wrapper
-RUN ./mvnw package -Pnative -DskipTests
+# Esta imagem de builder já contém o Maven.
+RUN mvn package -Pnative -DskipTests
 
 # Estágio 2: Imagem final, leve e otimizada
 FROM registry.access.redhat.com/ubi9/ubi-minimal:9.6
