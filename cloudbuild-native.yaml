@@ -8,40 +8,7 @@
 # NOTA: Usando Cloud Run Functions em vez de Cloud Functions Gen 2 para melhor suporte a containers
 
 steps:
-  # 1. Compila o executável nativo.
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build Native Executable'
-    entrypoint: 'docker'
-    args:
-      - 'run'
-      - '--rm'
-      - '-v'
-      - '/var/run/docker.sock:/var/run/docker.sock'
-      - '-v'
-      - '/usr/bin/docker:/usr/bin/docker'
-      - '-v'
-      - '/workspace:/workspace'
-      - '-w'
-      - '/workspace'
-      - 'maven:3.9.6-eclipse-temurin-21'
-      - 'mvn'
-      - 'package'
-      - '-Pnative'
-      - '-DskipTests'
-      - '-Dquarkus.netty.native-image-compute-allocator-config=true'
-
-  # 2. Constrói a imagem Docker final.
-  - name: 'gcr.io/cloud-builders/docker'
-    id: 'Build Final Docker Image'
-    args:
-      - 'build'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPOSITORY}/${_SERVICE_NAME}:latest'
-      - '.'
-    env:
-      - 'DOCKER_BUILDKIT=1'
-
-  # 2.1. Criar repositório Artifact Registry se não existir
+  # 1. Criar repositório Artifact Registry se não existir
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Create Artifact Registry'
     entrypoint: 'gcloud'
@@ -55,7 +22,7 @@ steps:
       - '--project=${PROJECT_ID}'
     allow_failure: true  # Permite falha se o repositório já existir
 
-  # 3. Implanta a HelloWorldHttpFunction como Cloud Run service.
+  # 2. Implanta a HelloWorldHttpFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy HTTP Function'
     entrypoint: 'gcloud'
@@ -69,7 +36,7 @@ steps:
       - '--platform=managed'
       - '--port=8080'
 
-  # 4. Implanta a HelloWorldBackgroundFunction como Cloud Run service.
+  # 3. Implanta a HelloWorldBackgroundFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy Background Function'
     entrypoint: 'gcloud'
@@ -83,7 +50,7 @@ steps:
       - '--platform=managed'
       - '--port=8080'
 
-  # 5. Implanta a HelloWorldCloudEventsFunction como Cloud Run service.
+  # 4. Implanta a HelloWorldCloudEventsFunction como Cloud Run service.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: 'Deploy CloudEvents Function'
     entrypoint: 'gcloud'
