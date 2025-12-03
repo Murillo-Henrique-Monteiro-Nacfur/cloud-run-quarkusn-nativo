@@ -12,8 +12,10 @@ RUN chown 1001 /work \
     && chmod "g+rwX" /work \
     && chown 1001:root /work
 COPY --from=build --chown=1001:root /app/target/*-runner.jar /work/application
+RUN chmod +x /work/application
 
 EXPOSE 8080
 USER 1001
 
-ENTRYPOINT ["./application", "-Dquarkus.http.host=0.0.0.0"]
+# Cloud Run passa PORT automaticamente, Quarkus usa isso por padrão
+ENTRYPOINT ["./application"]
